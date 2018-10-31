@@ -1,0 +1,100 @@
+YouTube предоставляет ряд параметров по управлению отображением элементов управления, логотипов, и информации, а также управлять качеством видео или кадром, с которого начнется воспроизведение.
+
+controls: установитье параметр в 0, и слой с элементами управления не будет отображаться в проигрывателе;
+modestbranding: установите в 1, и логотип YouTube исчезнет с панели управления;
+rel: установите в 0, и по завершению ролика вам не будет отображен список похожих видео;
+showinfo: установите в 0, и плеер не будет отображать информацию о видео, вроде названия видео и информацию о загрузившем его человеке перед началом произведения;
+start: задайте количество секунд от начала видео, и плеер воспроизведет видео начиная с этого времени (или с ближайшего кадра);
+vq: установите в желаемое качество видео (например, hd720 если доступно видео высокого качества).
+При добавлении YouTube iframe по клику на миниатюре, плеер будет проинициализирован с некоторыми параметрами, например autoplay (мы хотим, чтобы видео начало воспроизводится по клику на миниатюре), и autohide (чтобы скрыть элементы управления и полосу прогресса).
+
+
+Каждое видео YouTube имеет список сгенерированных миниатюр. Получить их можно посредством URL вида http://img.youtube.com/vi/<идентфикатор-видео-youtube>/<youtube-миниатюра> (где img.youtube.com может быть сокращено до i.ytimg.com).
+
+Вот список тех, которые интересны нам:
+
+default.jpg - версия по умолчанию (120px * 90px);
+hqdefault.jpg - версия высокого качества (480px * 360px);
+mqdefault.jpg - версия среднего качества (32px * 180px);
+sddefault.jpg - версия стандартного разрешения (640px * 480px);
+maxresdefault - версия максимального разрешения (1280px * 720px).
+В качестве примера посмотрите этот URL. Поиграйте параметрами чтобы понять, как они влияют на изображение.
+
+В нашем примере мы используем миниатюру sddefault.jpg. В зависимости от ваших требований и размеров экрана пользователя этот параметр может быть заменен любым из вышеперечисленных.
+
+
+HTML
+В коде HTML устанавливаем идентификатор видео с YouTube, стилями задаем размер видео (ширину и высоту), и перечисляем дополнительные параметры YouTube.
+
+<div class="youtube"
+     id="fsrJWUVoXeM"
+     style="width: 500px; height: 281px;">
+</div>
+
+<div class="youtube"
+     id="lR4tJr7sMPM"
+     data-params="modestbranding=1&showinfo=0&controls=0&vq=hd720"
+     style="width: 640px; height: 360px;">
+</div>
+
+CSS
+В двух видео, которые используются в качестве примера, соотношение сторон равно 16:9, и sddefault.jpg для них будет с двумя черными полосами по бокам. Чтобы их спрятать, свойство background-position устанавливается в значение center, тогда как размер изображения в теге div принимает следующий набор стилей: style="width:500px;height:281px;". Таким образом на странице можно отображать видео различных размеров на одной странице.
+
+Кнопка play, которая говорит пользователю, что это не обычное изображение, добавляется как слой поверх миниатюры, с эффектом перехода свойства прозрачности. Мы используем PNG изображение, закодированное в base64, что экономит нам HTTP запросы, и работает в браузерах вплоть до IE8.
+
+.youtube {
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    transition: all 200ms ease-out;
+    cursor: pointer;
+}
+
+.youtube .play {
+    background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAERklEQVR4nOWbTWhcVRTHb1IJVoxGtNCNdal2JYJReC6GWuO83PM/59yUS3FRFARdFlwYP1CfiojQWt36sRCUurRIdVFXIn41lAoVdRGrG1M01YpKrWjiYmaSl8ybZJL3cd+YA//NLObd3++eO8x79z5jSq5Gw+8kov0AP8vMR5l1BtBZQM4B8ks75wCdZdYZZj5qLZ4hov2Nht9Z9vhKKSIaB/gI4M4w62KeAO6Mte4lYOq20FxrlqqOibhHmeWbvNC9ZfDX1mLae391aN6limO/gwgvAPJbWeAZuSDingdwXTBw7/0IsyaA/Fkh+KqOkD+YNfHej1QKD+y7iVlOhgLvFqFfNJvNGyuBJ+KDAF8MDd0tgS8y64OlgSdJMsysL4cG7SOHkyQZLhTee7+d2R2rAVy/S+Jd7/32ouBHAP4gNNRGQyTHc/84NhqNywZp5rvjjnnvt21aABFeCQ+RLwAf2hQ8s7sv9OCLk6AHNgQvIrvbfzKCD76g/O6cu7lf/iER/aQGgy448pExZmhdegAPhR9sObFWH1gT3lp7DaA/5bkIgJhZPgsNmz02novj+KqeApj1ubwXWe4kdyeznAgNvTpE/HQmvKqOMeuFogTUVQSRno+iaLRLAJF7uIgL9O4ubgL8aWgB7S44mNX+35YpICUiAvS9sBLkq1WzT+NFffl6AuoiApi6NT37h6sWkBIRZGkQ8YtLgyji6e1mBYTqCEBPG2Naz+0BWQgtoGoRgCzEsd9hAN1X5BfnFZASUfrSAFQNsyZ1FJASUVpHiLinDJG8U2cBZYogkrcNs5waBAGdstbeU9zdqpw0gPwwSAI6VUxHyFlDpOcHUUBBIuYNs14aZAE5RVwyzPr3/0EAEY0TyfGNjBWQvwZ +CTSbehfAH29mrID8bET0+0EUkAd8WYDOmqJ3ecsG30yr9wqRfm6Y+a1BEFDEjHfHvWmY9ck6CygHvBVr8Xhtb4ZE5HZA3y8DvBNA1TjnrmXWf+sioMwZX5V/VHXMGGMMoKdDCxCRvRWBdzKzdHEO+EisilbPyopHYqp6S9UCAsz4iojI7hUDAtyXVQgIDd6KnOoaWNkbI6FaPSuZGyMArsi7MZoloB4zviI/Nhr3X95jltwTRQmoIfgisy5ai+me67OI7fE4nrqjrqfK1t0eby0FPRB6oGVlchL3rgnfrq19RKbVBdhV9IOSwJmfmJi4vi/4ThERitwyCxVAFqydshuCX5awhQ9KtmuIWd8IDZED/nXT77rvVVv6sHRKwjYi91poqP7Dr+Y6JJ1VSZIMA3wkPNy6bX+o8Bcm0sXMdwM8Fxo0A3xORPaWBp6uPXsmbxCRD0NDL0dOANhVCXy6iAjMcjbcrMt3RITKwdMVRdFo+y5yvkL4eWZ+zHt/ZVD4dEVRNGotpst+dZZZH8k86lqn2pIvT/eqrNfn2xuyqYPZ8mv7s8pfn/8Pybm4TIjanscAAAAASUVORK5CYII=") no-repeat center center;
+    background-size: 64px 64px;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    opacity: .8;
+    filter: alpha(opacity=80);
+    transition: all 0.2s ease-out;
+}
+
+.youtube .play:hover {
+    opacity: 1;
+    filter: alpha(opacity=100);
+}
+
+Реализация на jQuery
+На мой взгляд, более выразительная версия на основе jQuery.
+
+"use strict";
+$(function() {
+    $(".youtube").each(function() {
+        // Зная идентификатор видео на YouTube, легко можно найти его миниатюру
+        $(this).css('background-image', 'url(http://i.ytimg.com/vi/' + this.id + '/sddefault.jpg)');
+
+        // Добавляем иконку Play поверх миниатюры, чтобы было похоже на видеоплеер
+        $(this).append($('<div/>', {'class': 'play'}));
+
+        $(document).delegate('#'+this.id, 'click', function() {
+            // создаем iframe со включенной опцией autoplay
+            var iframe_url = "https://www.youtube.com/embed/" + this.id + "?autoplay=1&autohide=1";
+            if ($(this).data('params')) iframe_url+='&'+$(this).data('params');
+
+            // Высота и ширина iframe должны быть такими же, как и у родительского блока
+            var iframe = $('<iframe/>', {'frameborder': '0', 'src': iframe_url, 'width': $(this).width(), 'height': $(this).height() })
+
+            // Заменяем миниатюру HTML5 плеером с YouTube
+            $(this).replaceWith(iframe);
+        });
+    });
+ });
+
+http://codepen.io/stanislas-prime/pen/akrpD- Демо на CodePen
+
+https://ruseller.com/lessons.php?rub=32&id=2125- источник
+
